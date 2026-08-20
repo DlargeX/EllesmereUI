@@ -1215,7 +1215,7 @@ initFrame:SetScript("OnEvent", function(self)
             height    = 22,
             getChecked = function(key)
                 local ent = CurrentBandEntry()
-                local isPercent = (_bandLockPercent or (ent and ent.bandMode == "percent")) or false
+                local isPercent = _bandLockPercent or not (ent and ent.bandMode == "value")
                 if key == "percent" then return isPercent else return not isPercent end
             end,
             isDisabled = function() return _bandLockPercent and true or false end,
@@ -5554,16 +5554,16 @@ initFrame:SetScript("OnEvent", function(self)
             settingsBtn:SetScript("OnEnter", function(self)
                 btnBg:SetColorTexture(EllesmereUI.DD_BG_R, EllesmereUI.DD_BG_G, EllesmereUI.DD_BG_B, EllesmereUI.DD_BG_HA)
                 if self._border and self._border.SetColor then
-                local t = self._borderTint or THR_BORDER_WHITE
-                self._border:SetColor(t[1], t[2], t[3], 0.3)
-            end
+                    local t = self._borderTint or THR_BORDER_WHITE
+                    self._border:SetColor(t[1], t[2], t[3], 0.3)
+                end
             end)
             settingsBtn:SetScript("OnLeave", function(self)
                 btnBg:SetColorTexture(EllesmereUI.DD_BG_R, EllesmereUI.DD_BG_G, EllesmereUI.DD_BG_B, EllesmereUI.DD_BG_A)
                 if self._border and self._border.SetColor then
-                local t = self._borderTint or THR_BORDER_WHITE
-                self._border:SetColor(t[1], t[2], t[3], EllesmereUI.DD_BRD_A)
-            end
+                    local t = self._borderTint or THR_BORDER_WHITE
+                    self._border:SetColor(t[1], t[2], t[3], EllesmereUI.DD_BRD_A)
+                end
             end)
             local btnDis = CreateFrame("Frame", nil, settingsRgn)
             btnDis:SetAllPoints(settingsBtn)
