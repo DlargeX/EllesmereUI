@@ -6260,17 +6260,7 @@ L["RLP"] = true
 L["ToS"]  = true
 L["KR"] = true
 
--- Search Keywords: the haystack behind the sidebar "Search Features..." box,
--- NOT display text -- nothing in the section below is ever drawn on screen.
--- EllesmereUI.lua `_applySidebarSearch` -> addLocalized() indexes the English
--- form AND the translated form of every module's `searchTerms`, so these
--- entries ADD Chinese search words without taking the English ones away: both
--- still match. The query is split on whitespace and every word must be a
--- plain substring of the joined haystack.
---
--- Whole-module keyword blobs. The English side is one long space-separated
--- string per module (`searchTerms = "bags inventory items ..."`), so the
--- translation is one too.
+-- == Search Keywords ==
 L["absorb"] = "Absorption"
 L["aura bars"] = "Aurenleisten"
 L["battle res"] = "Kampfbelebung"
