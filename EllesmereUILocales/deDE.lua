@@ -430,7 +430,7 @@ L["Freezing Trap\n(Cursor)"] = "Eiskältefalle\n(Mauszeiger)"
 L["Flare\n(Cursor)"] = "Leuchtfeuer\n(Mauszeiger)"
 L["Tar Trap\n(Cursor)"] = "Teerfalle\n(Mauszeiger)"
 L["Binding Shot\n(Cursor)"] = "Bindender Schuss\n(Mauszeiger)"
-L["Roar of\nSacrifice"] = "Brüllen des\nOpfers"
+L["Roar of\nSacrifice"] = "Brüllen der\nAufopferung"
 L["Spirit Mend"] = "Geistheilung"
 L["Harpoon\n(Focus)"] = "Harpune\n(Fokus)"
 -- Mage
