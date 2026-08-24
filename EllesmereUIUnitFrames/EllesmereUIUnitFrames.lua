@@ -9667,8 +9667,13 @@ local function CreateCustomClassPower(playerFrame, style)
         end
 
         eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
-        eventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
-
+        -- PLAYER_SPECIALIZATION_CHANGED is deliberately NOT registered here. It is owned
+        -- by cpSpecWatcher (see InitializeFrames), which lives OUTSIDE the container,
+        -- filters unit == "player", and rebuilds after tearing down. A copy of that
+        -- handler on this driver could only ever destroy WITHOUT rebuilding (the
+        -- teardown unregisters the driver mid-dispatch), and -- lacking the unit filter
+        -- -- would fire on any GROUP MEMBER's spec event, silently killing the bar until
+        -- the next /reload.
         if needsAura then
             eventFrame:RegisterUnitEvent("UNIT_AURA", "player")
         end
@@ -9682,14 +9687,7 @@ local function CreateCustomClassPower(playerFrame, style)
         end
 
         eventFrame:SetScript("OnEvent", function(_, event, ...)
-            if event == "PLAYER_SPECIALIZATION_CHANGED" then
-                DestroyCustomClassPower()
-                frames._classPowerBar = nil
-                -- Don't call ReloadFrames here: the profile system handles the full
-                -- rebuild via RefreshAllAddons -> _EUF_ReloadFrames. Width/height
-                -- matches re-apply after CDM clears _specProfileSwitching in ProcessSpecChange.
-                return
-            elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
+            if event == "UNIT_SPELLCAST_SUCCEEDED" then
                 if not _G._ERB_AceDB and EllesmereUI then
                     local unit, castGUID, spellID = ...
                     if unit == "player" then
@@ -15561,13 +15559,36 @@ do
     local RACIAL_DISPEL_TYPES = {
         bleed = { Dwarf = true },  -- Stoneform
     }
+    -- The token is equally blind to talent dispels: a shaman's poison removal is
+    -- Poison Cleansing Totem, so Poison never passes for them. Raid Frames applies
+    -- the same rule to its group-wide dispel slots (EUI_RaidFrames_AuraContainers.lua).
+    -- Cached: IsPlayerSpell can lag both addon load and the trait event that
+    -- announces a change; the shaman watcher in EUI_UnitFrames_AuraContainers.lua
+    -- calls UF_RefreshPoisonTotem on trait and spellbook events and reloads the
+    -- dispel slots when it reports a flip.
+    local POISON_CLEANSING_TOTEM = 383013
+    local _, ufPlayerClass = UnitClass("player")
+    local poisonTotemKnown = ufPlayerClass == "SHAMAN"
+        and IsPlayerSpell(POISON_CLEANSING_TOTEM) or false
+    function ns.UF_RefreshPoisonTotem()
+        local known = ufPlayerClass == "SHAMAN"
+            and IsPlayerSpell(POISON_CLEANSING_TOTEM) or false
+        if known == poisonTotemKnown then return false end
+        poisonTotemKnown = known
+        return true
+    end
     -- Shared with the 12.1 container slots (EUI_UnitFrames_AuraContainers.lua),
     -- which apply the same rule by choosing which slot style stays visible.
-    function ns.UF_RacialClearsDispel(typeKey)
+    function ns.UF_TokenBlindDispel(typeKey)
         local races = RACIAL_DISPEL_TYPES[typeKey]
-        if not races then return false end
-        local _, raceToken = UnitRace("player")
-        return raceToken ~= nil and races[raceToken] == true
+        if races then
+            local _, raceToken = UnitRace("player")
+            return raceToken ~= nil and races[raceToken] == true
+        end
+        if typeKey == "poison" then
+            return poisonTotemKnown
+        end
+        return false
     end
 
     local function RebuildCurve()
